@@ -23,7 +23,7 @@
 或線上開啟（啟用 GitHub Pages 後）：
 
 ```
-https://<你的帳號>.github.io/rita-icon-studio/
+https://ritawang0312-boop.github.io/rita-icon-studio/
 ```
 
 ## 🛠 技術
