@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>圖示產生器 · Icon Studio</title>
+<script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f7f9; --panel:#ffffff; --line:#e6e8ec; --ink:#1f2937; --muted:#6b7280;
+    --brand:#4f46e5; --brand-weak:#eef2ff; --radius:14px; --shadow:0 1px 3px rgba(16,24,40,.06),0 1px 2px rgba(16,24,40,.04);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"Segoe UI","Microsoft JhengHei",system-ui,-apple-system,sans-serif;
+    background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased;
+  }
+  header{
+    padding:18px 22px; background:var(--panel); border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:14px; position:sticky; top:0; z-index:20;
+  }
+  header .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#22d3ee);
+    display:grid;place-items:center;color:#fff;font-size:22px;flex:none}
+  header h1{font-size:18px;margin:0;font-weight:700}
+  header p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+  .wrap{display:grid;grid-template-columns:1fr 380px;gap:18px;padding:18px 22px;max-width:1400px;margin:0 auto;align-items:start}
+  @media (max-width:920px){.wrap{grid-template-columns:1fr}}
+
+  /* search */
+  .searchbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .searchbox{flex:1;min-width:240px;position:relative}
+  .searchbox iconify-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:20px}
+  .searchbox input{
+    width:100%;padding:13px 14px 13px 44px;border:1px solid var(--line);border-radius:12px;
+    font-size:15px;background:var(--panel);box-shadow:var(--shadow);outline:none
+  }
+  .searchbox input:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-weak)}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{padding:7px 14px;border:1px solid var(--line);background:var(--panel);border-radius:999px;
+    font-size:13px;cursor:pointer;color:var(--muted);transition:.15s;user-select:none}
+  .chip:hover{border-color:var(--brand)}
+  .chip.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .suggest{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+  .suggest small{color:var(--muted);font-size:12px;align-self:center}
+  .suggest button{border:none;background:var(--brand-weak);color:var(--brand);padding:5px 11px;border-radius:8px;font-size:12.5px;cursor:pointer}
+  .suggest button:hover{background:#e0e7ff}
+
+  /* results */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .results{padding:14px;min-height:280px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px}
+  .cell{
+    aspect-ratio:1;border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:6px;cursor:pointer;background:#fff;transition:.15s;padding:6px;position:relative
+  }
+  .cell:hover{border-color:var(--brand);transform:translateY(-2px);box-shadow:0 6px 16px rgba(79,70,229,.12)}
+  .cell.sel{border-color:var(--brand);box-shadow:0 0 0 2px var(--brand-weak)}
+  .cell iconify-icon{font-size:30px;color:var(--ink)}
+  .cell .nm{font-size:9.5px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+  .cell .pick{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:6px;border:1px solid var(--line);
+    background:#fff;display:grid;place-items:center;font-size:13px;color:var(--muted);opacity:0;transition:.12s;z-index:2}
+  .cell:hover .pick{opacity:1}
+  .cell .pick.on{opacity:1;background:var(--brand);color:#fff;border-color:var(--brand)}
+  .cell.picked{border-color:var(--brand)}
+  .state{display:grid;place-items:center;min-height:240px;color:var(--muted);text-align:center;gap:10px;padding:20px}
+  .state iconify-icon{font-size:46px;opacity:.5}
+  .spinner{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .count{font-size:12.5px;color:var(--muted);padding:0 4px 10px}
+
+  /* editor */
+  .editor{position:sticky;top:90px;padding:16px}
+  .editor h2{font-size:14px;margin:0 0 12px;font-weight:700;display:flex;align-items:center;gap:7px}
+  .preview-wrap{border-radius:12px;overflow:hidden;border:1px solid var(--line);margin-bottom:14px}
+  .preview{height:200px;display:grid;place-items:center;
+    background-image:linear-gradient(45deg,#eceef1 25%,transparent 25%),linear-gradient(-45deg,#eceef1 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#eceef1 75%),linear-gradient(-45deg,transparent 75%,#eceef1 75%);
+    background-size:18px 18px;background-position:0 0,0 9px,9px -9px,-9px 0}
+  .preview svg{width:120px;height:120px;display:block}
+  .preview .empty{color:var(--muted);font-size:13px}
+  .field{margin-bottom:14px}
+  .field>label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:7px;font-weight:600}
+  .row{display:flex;align-items:center;gap:9px}
+  input[type=range]{flex:1;accent-color:var(--brand)}
+  .val{font-size:12px;color:var(--ink);min-width:34px;text-align:right;font-variant-numeric:tabular-nums}
+  .swatches{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+  .sw{width:24px;height:24px;border-radius:7px;border:1px solid rgba(0,0,0,.12);cursor:pointer}
+  .sw.active{box-shadow:0 0 0 2px var(--brand)}
+  input[type=color]{width:34px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;background:none;cursor:pointer}
+  .hex{width:90px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:ui-monospace,monospace}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border-radius:10px;border:1px solid var(--line);
+    background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink)}
+  .btn:hover{border-color:var(--brand)}
+  .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn.primary:hover{background:#4338ca}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .seg button{flex:1;border:none;background:#fff;padding:8px;font-size:12.5px;cursor:pointer;color:var(--muted)}
+  .seg button.active{background:var(--brand);color:#fff}
+  .dl{display:flex;gap:9px;margin-top:6px}
+  .dl .btn{flex:1;justify-content:center}
+  .note{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+  .hide{display:none!important}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
+  a{color:var(--brand)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><iconify-icon icon="ph:magic-wand-fill"></iconify-icon></div>
+  <div>
+    <h1>圖示產生器 · Icon Studio</h1>
+    <p>輸入文字（中／英）→ 多格圖示供選擇 → 調風格、線粗、顏色 → 下載去背 PNG / JPG</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- 左：搜尋 + 結果 -->
+  <div>
+    <div class="searchbar">
+      <div class="searchbox">
+        <iconify-icon icon="lucide:search"></iconify-icon>
+        <input id="q" type="text" placeholder="輸入關鍵字，例如：地球、愛心、設定、相機、globe…" autocomplete="off" />
+      </div>
+    </div>
+
+    <div class="chips" id="styleChips">
+      <span class="chip active" data-style="all">全部</span>
+      <span class="chip" data-style="outline">空心線條</span>
+      <span class="chip" data-style="solid">實心填滿</span>
+      <span class="chip" data-style="color">彩色</span>
+    </div>
+
+    <div class="suggest" id="suggest">
+      <small>熱門：</small>
+    </div>
+
+    <div id="batchBar" class="panel hide" style="padding:11px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <strong style="font-size:13px">批次清單 <span id="batchCount">0</span></strong>
+      <span class="note" style="margin:0">套用目前設定</span>
+      <input type="text" id="zipPrefix" class="hex" style="width:130px" placeholder="檔名前綴（選填）" />
+      <span style="flex:1"></span>
+      <button class="btn" id="zipPng"><iconify-icon icon="lucide:folder-down"></iconify-icon> ZIP（PNG）</button>
+      <button class="btn" id="zipJpg"><iconify-icon icon="lucide:folder-down"></iconify-icon> ZIP（JPG）</button>
+      <button class="btn" id="batchClear"><iconify-icon icon="lucide:x"></iconify-icon> 清空</button>
+    </div>
+
+    <div class="panel results">
+      <div class="count hide" id="count"></div>
+      <div id="grid" class="grid hide"></div>
+      <div id="state" class="state">
+        <iconify-icon icon="ph:shapes-duotone"></iconify-icon>
+        <div>輸入關鍵字開始搜尋<br><small>支援中文：地球、愛心、星星、購物車、設定…</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右：編輯器 -->
+  <div class="panel editor">
+    <h2><iconify-icon icon="lucide:sliders-horizontal"></iconify-icon> 編輯與下載</h2>
+
+    <div class="preview-wrap">
+      <div class="preview" id="preview"><span class="empty">點選左側任一圖示</span></div>
+    </div>
+
+    <!-- 風格 / 線粗 / 顏色（單色圖示適用） -->
+    <div id="monoCtrls">
+      <div class="field">
+        <label>線條粗細（僅空心線條圖示）</label>
+        <div class="row">
+          <input type="range" id="stroke" min="0.5" max="4" step="0.25" value="2" />
+          <span class="val" id="strokeVal">2.0</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>顏色</label>
+        <div class="swatches" id="swatches"></div>
+        <div class="row" style="margin-top:9px">
+          <input type="color" id="color" value="#1f2937" />
+          <input type="text" id="hex" class="hex" value="#1F2937" />
+          <button class="btn" id="eyedrop" title="從畫面任意處吸取顏色"><iconify-icon icon="lucide:pipette"></iconify-icon> 滴管</button>
+        </div>
+      </div>
+    </div>
+    <div id="colorNote" class="note hide"><iconify-icon icon="lucide:info"></iconify-icon> 此為多色圖示，將保留原始配色。</div>
+
+    <!-- 背景 / 尺寸 -->
+    <div class="field">
+      <label>輸出背景</label>
+      <div class="seg" id="bgSeg">
+        <button data-bg="transparent" class="active">透明（去背）</button>
+        <button data-bg="white">白底</button>
+        <button data-bg="custom">自訂</button>
+      </div>
+      <div class="row hide" id="bgCustomRow" style="margin-top:9px">
+        <input type="color" id="bgColor" value="#ffffff" />
+        <input type="text" id="bgHex" class="hex" value="#FFFFFF" />
+      </div>
+      <div class="note">JPG 不支援透明，將自動以背景色填滿。</div>
+    </div>
+
+    <div class="field">
+      <label>留白邊距</label>
+      <div class="row">
+        <input type="range" id="pad" min="0" max="0.3" step="0.02" value="0.1" />
+        <span class="val" id="padVal">10%</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>輸出尺寸（像素）</label>
+      <div class="seg" id="sizeSeg">
+        <button data-size="128">128</button>
+        <button data-size="256" class="active">256</button>
+        <button data-size="512">512</button>
+        <button data-size="1024">1024</button>
+      </div>
+      <div class="row" style="margin-top:9px">
+        <span style="font-size:12.5px;color:var(--muted)">自訂</span>
+        <input type="number" id="customSize" class="hex" style="width:90px" min="16" max="4096" step="1" placeholder="px" />
+        <span style="font-size:12px;color:var(--muted)">px（16–4096）</span>
+      </div>
+    </div>
+
+    <div class="dl">
+      <button class="btn primary" id="dlPng" disabled><iconify-icon icon="lucide:download"></iconify-icon> 下載 PNG</button>
+      <button class="btn" id="dlJpg" disabled><iconify-icon icon="lucide:download"></iconify-icon> 下載 JPG</button>
+    </div>
+    <div class="note" id="selName"></div>
+  </div>
+</div>
+
+<footer>圖示資料來源：<a href="https://iconify.design" target="_blank">Iconify</a>（20 萬+ 開源圖示）· 本工具於瀏覽器本機完成去背與匯出</footer>
+
+<script>
+const API = 'https://api.iconify.design';
+
+/* ---------- 中文 → 英文關鍵字對照 ---------- */
+const CN = {
+  '地球':'globe','地圖':'map','世界':'globe','全球':'globe',
+  '愛心':'heart','心':'heart','喜歡':'heart','收藏':'star','星星':'star','星':'star',
+  '家':'home','首頁':'home','房子':'house','房屋':'house',
+  '使用者':'user','用戶':'user','人':'user','人物':'person','個人':'user','帳號':'user','群組':'users','團隊':'users','聯絡人':'contact',
+  '設定':'settings','齒輪':'gear','工具':'tool','扳手':'wrench','調整':'sliders',
+  '搜尋':'search','放大鏡':'search','尋找':'search',
+  '相機':'camera','照片':'image','圖片':'image','圖像':'image','相片':'photo',
+  '影片':'video','電影':'film','播放':'play','暫停':'pause','停止':'stop',
+  '音樂':'music','喇叭':'speaker','聲音':'volume','耳機':'headphones','麥克風':'microphone',
+  '電話':'phone','手機':'smartphone','撥號':'phone','通話':'phone-call',
+  '信件':'mail','郵件':'mail','信封':'envelope','訊息':'message','聊天':'chat','對話':'message-circle','通知':'bell','鈴鐺':'bell',
+  '日曆':'calendar','行事曆':'calendar','時鐘':'clock','時間':'clock','鬧鐘':'alarm','碼表':'timer','沙漏':'hourglass',
+  '購物車':'shopping-cart','購物':'shopping-bag','袋子':'bag','錢':'dollar','金錢':'money','錢包':'wallet','信用卡':'credit-card','標籤':'tag','價格':'tag','禮物':'gift',
+  '檔案':'file','文件':'file-text','資料夾':'folder','下載':'download','上傳':'upload','分享':'share','連結':'link','附件':'paperclip','複製':'copy','貼上':'clipboard','剪刀':'scissors','垃圾桶':'trash','刪除':'trash','編輯':'edit','筆':'pen','鉛筆':'pencil','儲存':'save','列印':'printer',
+  '愛':'heart','讚':'thumbs-up','倒讚':'thumbs-down','確認':'check','打勾':'check','錯誤':'x','叉':'x','關閉':'x','警告':'alert-triangle','問題':'help-circle','資訊':'info','加':'plus','新增':'plus','減':'minus','移除':'minus',
+  '箭頭':'arrow-right','返回':'arrow-left','上':'arrow-up','下':'arrow-down','重新整理':'refresh','重整':'refresh','旋轉':'rotate','重複':'repeat','洗牌':'shuffle',
+  '鎖':'lock','解鎖':'unlock','鑰匙':'key','盾牌':'shield','安全':'shield-check','保護':'shield','眼睛':'eye','隱藏':'eye-off','指紋':'fingerprint',
+  '太陽':'sun','月亮':'moon','雲':'cloud','下雨':'cloud-rain','雪':'snowflake','閃電':'zap','天氣':'cloud-sun','彩虹':'rainbow','風':'wind','溫度':'thermometer','火':'flame','水':'droplet','水滴':'droplet',
+  '電池':'battery','插頭':'plug','電源':'power','燈泡':'lightbulb','燈':'lamp','wifi':'wifi','藍牙':'bluetooth','訊號':'signal',
+  '電腦':'monitor','筆電':'laptop','螢幕':'monitor','鍵盤':'keyboard','滑鼠':'mouse','伺服器':'server','資料庫':'database','晶片':'cpu','硬碟':'hard-drive','機器人':'bot','程式':'code','終端機':'terminal','錯誤蟲':'bug','蟲':'bug',
+  '汽車':'car','車':'car','公車':'bus','火車':'train','飛機':'plane','船':'ship','腳踏車':'bike','機車':'bike','卡車':'truck','火箭':'rocket','地點':'map-pin','位置':'map-pin','導航':'navigation','指南針':'compass','旗子':'flag','旗幟':'flag',
+  '書':'book','書本':'book-open','筆記':'notebook','便條':'sticky-note','清單':'list','勾選清單':'list-checks','表格':'table','圖表':'bar-chart','長條圖':'bar-chart','圓餅圖':'pie-chart','折線圖':'line-chart','趨勢':'trending-up','分析':'activity',
+  '食物':'utensils','餐廳':'utensils','咖啡':'coffee','茶':'coffee','披薩':'pizza','蛋糕':'cake','酒':'wine','啤酒':'beer','蘋果':'apple',
+  '醫療':'stethoscope','醫院':'hospital','藥':'pill','急救':'first-aid','心跳':'heart-pulse','dna':'dna','針筒':'syringe',
+  '花':'flower','樹':'tree','葉子':'leaf','植物':'sprout','寵物':'paw-print','狗':'dog','貓':'cat','鳥':'bird','魚':'fish','蝴蝶':'butterfly',
+  '太陽眼鏡':'glasses','眼鏡':'glasses','衣服':'shirt','鞋':'footprints','皇冠':'crown','鑽石':'gem','獎盃':'trophy','獎牌':'medal','慶祝':'party-popper','氣球':'balloon',
+  '地球儀':'globe','幣':'coin','比特幣':'bitcoin','圖釘':'pin','釘':'pin','放大':'zoom-in','縮小':'zoom-out','選單':'menu','更多':'more-horizontal','格線':'grid','版面':'layout','過濾':'filter','排序':'arrow-up-down',
+  '播放清單':'list-music','直播':'radio','電視':'tv','遊戲':'gamepad','骰子':'dice','拼圖':'puzzle','魔術':'wand-sparkles','閃光':'sparkles','燈塔':'lighthouse',
+  '工廠':'factory','建築':'building','商店':'store','銀行':'landmark','學校':'school','教育':'graduation-cap','畢業':'graduation-cap',
+  '太空':'rocket','月球':'moon','行星':'orbit','望遠鏡':'telescope','原子':'atom','磁鐵':'magnet','燒杯':'flask','實驗':'flask-conical','顯微鏡':'microscope'
+};
+const HOT = ['地球','愛心','設定','搜尋','相機','使用者','下載','日曆','購物車','星星','火箭','咖啡'];
+
+/* ---------- 風格判斷 ---------- */
+const MULTICOLOR = new Set(['noto','noto-v1','twemoji','fxemoji','emojione','openmoji','fluent-emoji','fluent-emoji-flat','fluent-emoji-high-contrast','flat-color-icons','logos','skill-icons','devicon','vscode-icons','circle-flags','flag','cif','unjs','catppuccin','material-icon-theme']);
+const OUTLINE_SETS = new Set(['lucide','tabler','feather','iconoir','ph','majesticons','akar-icons','ci','radix-icons','heroicons','carbon','mynaui','hugeicons','lets-icons','solar','basil','gravity-ui','line-md','stash']);
+const SOLID_SETS = new Set(['mdi','ic','bxs','fa6-solid','fa-solid','fluent','material-symbols','ri','mingcute','tabler-filled']);
+
+function classify(full){
+  const i = full.indexOf(':'); const prefix = full.slice(0,i); const name = full.slice(i+1).toLowerCase();
+  if(MULTICOLOR.has(prefix)) return 'color';
+  if(/(^|-)(fill|filled|solid|bold)($|-)/.test(name)) return 'solid';
+  if(/(^|-)(line|linear|outline|thin|light|twotone|duotone)($|-)/.test(name)) return 'outline';
+  if(OUTLINE_SETS.has(prefix)) return 'outline';
+  if(SOLID_SETS.has(prefix)) return 'solid';
+  return 'other';
+}
+
+/* ---------- 狀態 ---------- */
+let allIcons = [];          // 本次搜尋全部結果 full id
+let curStyle = 'all';
+let selected = null;        // full id
+let originalSVG = '';       // 選取圖示的原始 SVG 文字
+let isMono = true, isStroke = false;
+
+const $ = s=>document.querySelector(s);
+const grid=$('#grid'), state=$('#state'), countEl=$('#count');
+
+/* ---------- 搜尋 ---------- */
+function translate(input){
+  const t = input.trim();
+  if(!t) return '';
+  if(CN[t]) return CN[t];
+  // 部分比對：找包含關係的中文詞
+  for(const k in CN){ if(t.includes(k)||k.includes(t)) return CN[k]; }
+  return t; // 直接當英文用
+}
+
+let timer=null;
+$('#q').addEventListener('input', e=>{ clearTimeout(timer); timer=setTimeout(()=>doSearch(e.target.value),300); });
+
+async function doSearch(input){
+  const q = translate(input);
+  if(!q){ allIcons=[]; render(); state.classList.remove('hide'); grid.classList.add('hide'); countEl.classList.add('hide');
+    state.innerHTML='<iconify-icon icon="ph:shapes-duotone"></iconify-icon><div>輸入關鍵字開始搜尋<br><small>支援中文：地球、愛心、星星、購物車、設定…</small></div>'; return; }
+  grid.classList.add('hide'); countEl.classList.add('hide'); state.classList.remove('hide');
+  state.innerHTML='<div class="spinner"></div><div>搜尋「'+input+'」…</div>';
+  try{
+    const r = await fetch(`${API}/search?query=${encodeURIComponent(q)}&limit=200`);
+    const data = await r.json();
+    allIcons = data.icons || [];
+    if(!allIcons.length){
+      state.innerHTML='<iconify-icon icon="ph:smiley-sad-duotone"></iconify-icon><div>找不到「'+input+'」的圖示<br><small>試試其他關鍵字，或用英文搜尋</small></div>';
+      return;
+    }
+    render();
+  }catch(err){
+    state.innerHTML='<iconify-icon icon="lucide:wifi-off"></iconify-icon><div>連線失敗，請確認網路後再試</div>';
+  }
+}
+
+function render(){
+  let list = allIcons;
+  if(curStyle!=='all') list = allIcons.filter(f=>classify(f)===curStyle);
+  if(!list.length){
+    grid.classList.add('hide'); countEl.classList.add('hide'); state.classList.remove('hide');
+    state.innerHTML='<iconify-icon icon="ph:funnel-duotone"></iconify-icon><div>此風格下沒有結果<br><small>切換到「全部」看看</small></div>';
+    return;
+  }
+  state.classList.add('hide'); grid.classList.remove('hide'); countEl.classList.remove('hide');
+  countEl.textContent = `共 ${list.length} 個圖示${curStyle!=='all'?'（已篩選）':''}，點選即可編輯`;
+  grid.innerHTML = list.slice(0,180).map(f=>{
+    const name=f.slice(f.indexOf(':')+1);
+    const on=batch.has(f);
+    return `<div class="cell${f===selected?' sel':''}${on?' picked':''}" data-icon="${f}" title="${f}">
+      <button class="pick${on?' on':''}" data-pick="${f}" title="加入批次">${on?'✓':'+'}</button>
+      <iconify-icon icon="${f}"></iconify-icon><span class="nm">${name}</span></div>`;
+  }).join('');
+  grid.querySelectorAll('.cell').forEach(c=>c.onclick=e=>{
+    if(e.target.closest('.pick')){ togglePick(c.dataset.icon); return; }
+    selectIcon(c.dataset.icon);
+  });
+}
+
+$('#styleChips').addEventListener('click',e=>{
+  const chip=e.target.closest('.chip'); if(!chip)return;
+  $('#styleChips').querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active'); curStyle=chip.dataset.style; render();
+});
+
+/* 熱門關鍵字 */
+HOT.forEach(w=>{ const b=document.createElement('button'); b.textContent=w;
+  b.onclick=()=>{ $('#q').value=w; doSearch(w); }; $('#suggest').appendChild(b); });
+
+/* ---------- 選取圖示 → 載入原始 SVG ---------- */
+async function selectIcon(full){
+  selected=full;
+  grid.querySelectorAll('.cell').forEach(c=>c.classList.toggle('sel',c.dataset.icon===full));
+  $('#selName').textContent='已選：'+full;
+  const prefix=full.slice(0,full.indexOf(':')), name=full.slice(full.indexOf(':')+1);
+  const pv=$('#preview'); pv.innerHTML='<div class="empty">載入中…</div>';
+  try{
+    const r=await fetch(`${API}/${prefix}/${name}.svg`);
+    originalSVG=await r.text();
+  }catch(e){ pv.innerHTML='<div class="empty">圖示載入失敗</div>'; return; }
+
+  isMono = originalSVG.includes('currentColor');
+  isStroke = /stroke="(?!none)/.test(originalSVG) || (/fill="none"/.test(originalSVG) && /stroke=/.test(originalSVG));
+  $('#monoCtrls').classList.toggle('hide', !isMono);
+  $('#colorNote').classList.toggle('hide', isMono);
+  $('#stroke').disabled = !isStroke;
+  $('#dlPng').disabled=false; $('#dlJpg').disabled=false;
+  updatePreview();
+}
+
+/* ---------- 建立處理後的 SVG（任意 svg 字串皆可，依自身特性套用設定）---------- */
+function makeSVG(svgStr, forExport, size){
+  const mono = svgStr.includes('currentColor');
+  const stroke = /stroke="(?!none)/.test(svgStr) || (/fill="none"/.test(svgStr) && /stroke=/.test(svgStr));
+  const doc=new DOMParser().parseFromString(svgStr,'image/svg+xml');
+  const svg=doc.documentElement;
+  if(!svg.getAttribute('viewBox')){
+    const w=svg.getAttribute('width')||24,h=svg.getAttribute('height')||24;
+    svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+  }
+  if(forExport){ svg.setAttribute('width',size); svg.setAttribute('height',size); }
+  else { svg.setAttribute('width','100%'); svg.setAttribute('height','100%'); }
+
+  if(stroke){
+    const sw=$('#stroke').value;
+    svg.setAttribute('stroke-width',sw);
+    doc.querySelectorAll('[stroke-width]').forEach(el=>el.setAttribute('stroke-width',sw));
+  }
+  let out=new XMLSerializer().serializeToString(svg);
+  if(mono){ out=out.split('currentColor').join($('#color').value); }
+  return out;
+}
+function buildSVG(forExport, size){ return makeSVG(originalSVG, forExport, size); }
+
+function updatePreview(){
+  if(!selected||!originalSVG)return;
+  $('#preview').innerHTML=buildSVG(false);
+}
+
+/* svg 字串 → 影像 Blob */
+async function rasterize(svgStr, format, size){
+  const processed=makeSVG(svgStr,true,size);
+  const blob=new Blob([processed],{type:'image/svg+xml;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const img=new Image();
+  await new Promise((res,rej)=>{ img.onload=res; img.onerror=rej; img.src=url; });
+  const canvas=document.createElement('canvas'); canvas.width=size; canvas.height=size;
+  const ctx=canvas.getContext('2d');
+  const bg=bgFor(format);
+  if(bg){ ctx.fillStyle=bg; ctx.fillRect(0,0,size,size); }
+  const pad=size*parseFloat($('#pad').value);
+  ctx.drawImage(img,pad,pad,size-pad*2,size-pad*2);
+  URL.revokeObjectURL(url);
+  const mime=format==='jpg'?'image/jpeg':'image/png';
+  return await new Promise(res=>canvas.toBlob(res,mime,0.92));
+}
+
+/* ---------- 控制項 ---------- */
+$('#stroke').addEventListener('input',e=>{ $('#strokeVal').textContent=parseFloat(e.target.value).toFixed(2).replace(/0$/,''); updatePreview(); });
+$('#pad').addEventListener('input',e=>{ $('#padVal').textContent=Math.round(e.target.value*100)+'%'; });
+
+/* 顏色 */
+const SWATCHES=['#1F2937','#000000','#FFFFFF','#EF4444','#F59E0B','#10B981','#3B82F6','#6366F1','#8B5CF6','#EC4899'];
+SWATCHES.forEach(c=>{ const d=document.createElement('div'); d.className='sw'; d.style.background=c; d.dataset.c=c;
+  if(c==='#1F2937')d.classList.add('active');
+  d.onclick=()=>setColor(c); $('#swatches').appendChild(d); });
+function setColor(hex){
+  hex=hex.toUpperCase();
+  $('#color').value=hex; $('#hex').value=hex;
+  $('#swatches').querySelectorAll('.sw').forEach(s=>s.classList.toggle('active',s.dataset.c===hex));
+  updatePreview();
+}
+$('#color').addEventListener('input',e=>setColor(e.target.value));
+$('#hex').addEventListener('change',e=>{ let v=e.target.value.trim(); if(!v.startsWith('#'))v='#'+v; if(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v))setColor(v); });
+$('#eyedrop').addEventListener('click',async()=>{
+  if(!window.EyeDropper){ alert('此瀏覽器不支援滴管功能，請使用 Chrome / Edge。'); return; }
+  try{ const ed=new EyeDropper(); const r=await ed.open(); setColor(r.sRGBHex); }catch(e){}
+});
+
+/* 背景 */
+let bgMode='transparent';
+$('#bgSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
+  $('#bgSeg').querySelectorAll('button').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+  bgMode=b.dataset.bg; $('#bgCustomRow').classList.toggle('hide',bgMode!=='custom'); });
+$('#bgColor').addEventListener('input',e=>$('#bgHex').value=e.target.value.toUpperCase());
+$('#bgHex').addEventListener('change',e=>{ let v=e.target.value.trim(); if(!v.startsWith('#'))v='#'+v; if(/^#([0-9a-f]{6})$/i.test(v))$('#bgColor').value=v; });
+
+/* 尺寸 */
+let outSize=256;
+$('#sizeSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
+  $('#sizeSeg').querySelectorAll('button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); outSize=+b.dataset.size; });
+
+/* ---------- 匯出 ---------- */
+function bgFor(format){
+  if(format==='jpg') return bgMode==='custom'?$('#bgColor').value:(bgMode==='white'?'#FFFFFF':'#FFFFFF');
+  if(bgMode==='white') return '#FFFFFF';
+  if(bgMode==='custom') return $('#bgColor').value;
+  return null; // 透明
+}
+function saveBlob(b,name){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(b); a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+async function exportImage(format){
+  if(!selected||!originalSVG)return;
+  const b=await rasterize(originalSVG,format,outSize);
+  saveBlob(b,`${selected.replace(':','-')}-${outSize}.${format}`);
+}
+$('#dlPng').addEventListener('click',()=>exportImage('png'));
+$('#dlJpg').addEventListener('click',()=>exportImage('jpg'));
+
+/* ---------- 自訂尺寸 ---------- */
+$('#customSize').addEventListener('input',e=>{
+  const v=parseInt(e.target.value,10);
+  if(v>=16&&v<=4096){ outSize=v; $('#sizeSeg').querySelectorAll('button').forEach(x=>x.classList.remove('active')); }
+});
+$('#sizeSeg').addEventListener('click',()=>{ $('#customSize').value=''; });
+
+/* ---------- 批次選取 + ZIP ---------- */
+const batch=new Set();
+function togglePick(full){
+  if(batch.has(full))batch.delete(full); else batch.add(full);
+  // 更新該格外觀
+  const cell=grid.querySelector(`.cell[data-icon="${full}"]`);
+  if(cell){ const on=batch.has(full); cell.classList.toggle('picked',on);
+    const p=cell.querySelector('.pick'); p.classList.toggle('on',on); p.textContent=on?'✓':'+'; }
+  updateBatchBar();
+}
+function updateBatchBar(){
+  $('#batchCount').textContent=batch.size;
+  $('#batchBar').classList.toggle('hide',batch.size===0);
+}
+$('#batchClear').addEventListener('click',()=>{
+  batch.clear(); updateBatchBar();
+  grid.querySelectorAll('.cell.picked').forEach(c=>{ c.classList.remove('picked');
+    const p=c.querySelector('.pick'); p.classList.remove('on'); p.textContent='+'; });
+});
+
+async function exportZip(format){
+  if(!batch.size)return;
+  const btn=format==='jpg'?$('#zipJpg'):$('#zipPng');
+  const orig=btn.innerHTML; btn.disabled=true;
+  const zip=new JSZip(); let done=0; const items=[...batch];
+  let fnPrefix=$('#zipPrefix').value.trim().replace(/[\\/:*?"<>|]/g,'').trim();
+  if(fnPrefix) fnPrefix=fnPrefix+'-';
+  for(const full of items){
+    btn.innerHTML=`<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> ${++done}/${items.length}`;
+    try{
+      const prefix=full.slice(0,full.indexOf(':')), name=full.slice(full.indexOf(':')+1);
+      const svgStr=await (await fetch(`${API}/${prefix}/${name}.svg`)).text();
+      const b=await rasterize(svgStr,format,outSize);
+      const seq=fnPrefix?String(done).padStart(2,'0')+'-':'';
+      zip.file(`${fnPrefix}${seq}${full.replace(':','-')}-${outSize}.${format}`, b);
+    }catch(e){ /* 跳過失敗的單張 */ }
+  }
+  const content=await zip.generateAsync({type:'blob'});
+  saveBlob(content,`${fnPrefix||'icons-'}${outSize}-${format}-${items.length}.zip`);
+  btn.innerHTML=orig; btn.disabled=false;
+}
+$('#zipPng').addEventListener('click',()=>exportZip('png'));
+$('#zipJpg').addEventListener('click',()=>exportZip('jpg'));
+
+/* ---------- 記住上次設定（localStorage）---------- */
+const LS='iconStudio:v1';
+function saveSettings(){
+  try{ localStorage.setItem(LS, JSON.stringify({
+    color:$('#color').value, stroke:$('#stroke').value, pad:$('#pad').value,
+    bgMode, bgColor:$('#bgColor').value, outSize, customSize:$('#customSize').value,
+    style:curStyle, prefix:$('#zipPrefix').value
+  })); }catch(e){}
+}
+function loadSettings(){
+  let s; try{ s=JSON.parse(localStorage.getItem(LS)); }catch(e){}
+  if(!s)return;
+  if(s.color) setColor(s.color);
+  if(s.stroke){ $('#stroke').value=s.stroke; $('#strokeVal').textContent=parseFloat(s.stroke).toFixed(2).replace(/0$/,''); }
+  if(s.pad!=null){ $('#pad').value=s.pad; $('#padVal').textContent=Math.round(s.pad*100)+'%'; }
+  if(s.bgColor){ $('#bgColor').value=s.bgColor; $('#bgHex').value=s.bgColor.toUpperCase(); }
+  if(s.bgMode){ bgMode=s.bgMode;
+    $('#bgSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.bg===s.bgMode));
+    $('#bgCustomRow').classList.toggle('hide',s.bgMode!=='custom'); }
+  if(s.style){ curStyle=s.style;
+    $('#styleChips').querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.style===s.style)); }
+  if(s.prefix) $('#zipPrefix').value=s.prefix;
+  if(s.customSize){ const v=parseInt(s.customSize,10);
+    if(v>=16&&v<=4096){ $('#customSize').value=s.customSize; outSize=v;
+      $('#sizeSeg').querySelectorAll('button').forEach(x=>x.classList.remove('active')); } }
+  else if(s.outSize){ outSize=s.outSize;
+    $('#sizeSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('active',+b.dataset.size===s.outSize)); }
+}
+document.addEventListener('input',()=>setTimeout(saveSettings,0));
+document.addEventListener('click',()=>setTimeout(saveSettings,0));
+loadSettings();
+</script>
+</body>
+</html>
