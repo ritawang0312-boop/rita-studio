@@ -30,6 +30,13 @@
     display:grid;place-items:center;color:#fff;font-size:21px;flex:none}
   header h1{font-size:19px;margin:0;font-weight:650;letter-spacing:-.02em}
   header p{margin:3px 0 0;font-size:12.5px;color:var(--muted)}
+  .hbtn{margin-left:auto;display:inline-flex;align-items:center;gap:9px;padding:11px 17px;border-radius:12px;
+    border:1px solid var(--ink);background:var(--ink);color:#fff;font-size:13.5px;font-weight:600;cursor:pointer;
+    transition:.14s;white-space:nowrap;flex:none}
+  .hbtn:hover{background:#000;transform:translateY(-1px);box-shadow:0 6px 18px rgba(10,10,10,.22)}
+  .hbtn .dots{width:18px;height:18px;border-radius:6px;flex:none;
+    background:conic-gradient(from 220deg,#E76F51,#E9C46A,#2A9D8F,#264653,#9A8C98,#E76F51)}
+  @media (max-width:560px){.hbtn span.dots{display:none}.hbtn{padding:10px 13px}header p{display:none}}
   .wrap{display:grid;grid-template-columns:1fr 360px;gap:34px;padding:34px 32px;max-width:1340px;margin:0 auto;align-items:start}
   @media (max-width:920px){
     .wrap{grid-template-columns:1fr;gap:24px;padding:20px}
@@ -103,7 +110,9 @@
   .row{display:flex;align-items:center;gap:9px}
   input[type=range]{flex:1;accent-color:var(--ink)}
   .val{font-size:12px;color:var(--ink);min-width:34px;text-align:right;font-variant-numeric:tabular-nums}
-  .swatches{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .swatches{display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-radius:10px}
+  @keyframes swflash{0%{box-shadow:0 0 0 0 rgba(10,10,10,0)}30%{box-shadow:0 0 0 6px rgba(10,10,10,.1)}100%{box-shadow:0 0 0 0 rgba(10,10,10,0)}}
+  .swatches.flash{animation:swflash 1s ease}
   .sw{width:26px;height:26px;border-radius:8px;border:1px solid rgba(0,0,0,.1);cursor:pointer;transition:.12s}
   .sw:hover{transform:scale(1.1)}
   .sw.active{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink)}
@@ -129,6 +138,43 @@
   .hide{display:none!important}
   footer{text-align:center;color:var(--muted);font-size:12px;padding:28px;border-top:1px solid var(--line);margin-top:24px}
   a{color:var(--ink);text-underline-offset:2px}
+
+  /* 配色靈感 Modal */
+  .modal{position:fixed;inset:0;z-index:60;background:rgba(10,10,10,.42);backdrop-filter:blur(3px);
+    display:grid;place-items:center;padding:24px;animation:fade .18s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .modal-box{background:var(--bg);border:1px solid var(--line);border-radius:20px;width:min(860px,100%);
+    max-height:88vh;overflow-y:auto;padding:26px;box-shadow:0 24px 60px rgba(10,10,10,.18)}
+  .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px}
+  .modal-head h3{margin:0;font-size:18px;font-weight:650;letter-spacing:-.02em}
+  .x{width:34px;height:34px;border:1px solid var(--line);border-radius:9px;background:var(--bg);cursor:pointer;
+    display:grid;place-items:center;color:var(--muted);font-size:18px;flex:none;transition:.13s}
+  .x:hover{border-color:var(--ink);color:var(--ink)}
+  .ptabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
+  .ptab{padding:7px 14px;border:1px solid var(--line);background:var(--bg);border-radius:999px;font-size:13px;
+    cursor:pointer;color:var(--muted);font-weight:500;transition:.13s}
+  .ptab:hover{border-color:var(--ink);color:var(--ink)}
+  .ptab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:14px}
+  .pcard{border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:.14s}
+  .pcard:hover{box-shadow:0 8px 22px rgba(10,10,10,.1);transform:translateY(-2px)}
+  .pcolors{display:flex;height:96px}
+  .pcolors .c{flex:1;position:relative;cursor:pointer;transition:flex .18s}
+  .pcolors .c:hover{flex:1.6}
+  .pcolors .c span{position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:10px;
+    font-family:ui-monospace,monospace;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5);opacity:0;transition:.13s;letter-spacing:.02em}
+  .pcolors .c:hover span{opacity:1}
+  .pcardfoot{display:flex;gap:8px;padding:9px 11px;align-items:center}
+  .pcardfoot .nm{font-size:11.5px;color:var(--muted);flex:1}
+  .mini{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:5px 9px;font-size:11.5px;
+    cursor:pointer;color:var(--ink);font-weight:600;transition:.12s;display:inline-flex;align-items:center;gap:4px}
+  .mini:hover{border-color:var(--ink);background:var(--soft)}
+
+  /* Toast */
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(10px);z-index:80;
+    background:var(--ink);color:#fff;padding:11px 18px;border-radius:11px;font-size:13px;font-weight:500;
+    box-shadow:0 10px 30px rgba(10,10,10,.25);opacity:0;transition:.22s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
@@ -138,6 +184,7 @@
     <h1>圖示產生器 · Icon Studio</h1>
     <p>輸入文字（中／英）→ 多格圖示供選擇 → 調風格、線粗、顏色 → 下載去背 PNG / JPG</p>
   </div>
+  <button id="openPalette2" class="hbtn"><span class="dots"></span> 簡報配色靈感</button>
 </header>
 
 <div class="wrap">
@@ -235,6 +282,8 @@
           <input type="text" id="hex" class="hex" value="#1F2937" />
           <button class="btn" id="eyedrop" title="從畫面任意處吸取顏色"><iconify-icon icon="lucide:pipette"></iconify-icon> 滴管</button>
         </div>
+        <button class="btn" id="openPalette" style="width:100%;margin-top:9px;justify-content:center">
+          <iconify-icon icon="lucide:palette"></iconify-icon> 簡報配色靈感</button>
       </div>
     </div>
     <div id="colorNote" class="note hide"><iconify-icon icon="lucide:info"></iconify-icon> 此為多色圖示，將保留原始配色。</div>
@@ -284,6 +333,23 @@
     <div class="note" id="selName"></div>
   </div>
 </div>
+
+<!-- 配色靈感 Modal -->
+<div id="paletteModal" class="modal hide">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <h3>簡報配色靈感</h3>
+        <p class="note" style="margin:3px 0 0">策展配色，靈感參考 ColorHunt · 適合簡報與圖示統一配色</p>
+      </div>
+      <button id="closePalette" class="x" title="關閉"><iconify-icon icon="lucide:x"></iconify-icon></button>
+    </div>
+    <div class="ptabs" id="ptabs"></div>
+    <div class="pgrid" id="paletteGrid"></div>
+    <p class="note" style="padding:0 4px">點 <b>單一色塊</b> = 套用到目前圖示並複製色碼　·　<b>套用此組</b> = 設為快速色票　·　<b>複製</b> = 複製整組色碼貼到簡報</p>
+  </div>
+</div>
+<div id="toast" class="toast hide"></div>
 
 <footer>圖示資料來源：<a href="https://iconify.design" target="_blank">Iconify</a>（20 萬+ 開源圖示）· 本工具於瀏覽器本機完成去背與匯出</footer>
 
@@ -586,9 +652,19 @@ $('#pad').addEventListener('input',e=>{ $('#padVal').textContent=Math.round(e.ta
 
 /* 顏色 */
 const SWATCHES=['#1F2937','#000000','#FFFFFF','#EF4444','#F59E0B','#10B981','#3B82F6','#6366F1','#8B5CF6','#EC4899'];
-SWATCHES.forEach(c=>{ const d=document.createElement('div'); d.className='sw'; d.style.background=c; d.dataset.c=c;
-  if(c==='#1F2937')d.classList.add('active');
-  d.onclick=()=>setColor(c); $('#swatches').appendChild(d); });
+function renderSwatches(colors){
+  const box=$('#swatches'); box.innerHTML='';
+  colors.forEach(c=>{ c=c.toUpperCase(); const d=document.createElement('div'); d.className='sw'; d.style.background=c; d.dataset.c=c;
+    if(c===$('#color').value.toUpperCase())d.classList.add('active');
+    d.onclick=()=>setColor(c); box.appendChild(d); });
+}
+renderSwatches(SWATCHES);
+function addSwatch(c){
+  c=c.toUpperCase();
+  let cols=[...$('#swatches').children].map(s=>s.dataset.c.toUpperCase());
+  if(!cols.includes(c)){ cols.unshift(c); if(cols.length>12) cols=cols.slice(0,12); renderSwatches(cols); }
+}
+function flashSwatches(){ const b=$('#swatches'); b.classList.remove('flash'); void b.offsetWidth; b.classList.add('flash'); }
 function setColor(hex){
   hex=hex.toUpperCase();
   $('#color').value=hex; $('#hex').value=hex;
@@ -685,6 +761,113 @@ async function exportZip(format){
 }
 $('#zipPng').addEventListener('click',()=>exportZip('png'));
 $('#zipJpg').addEventListener('click',()=>exportZip('jpg'));
+
+/* ---------- 簡報配色靈感 ---------- */
+const PALETTES={
+  '復古 Retro':[
+    ['#264653','#2A9D8F','#E9C46A','#F4A261','#E76F51'],
+    ['#2C3333','#395B64','#A5C9CA','#E7F6F2'],
+    ['#113946','#BCA37F','#EAD7BB','#FFF2D8'],
+    ['#22223B','#4A4E69','#9A8C98','#C9ADA7','#F2E9E4'],
+    ['#772E25','#C44536','#F8A055','#FAD02C'],
+    ['#582F0E','#7F4F24','#B08968','#DDB892','#EDE0D4'],
+  ],
+  '莫蘭迪 Morandi':[
+    ['#868B8E','#B7B8B6','#C9C0BB','#EEEDE7'],
+    ['#6E7783','#A79B8E','#C9B1A3','#D4C5C7'],
+    ['#6F6259','#9E9686','#C6B7A6','#DDD3C3'],
+    ['#8E7F7F','#A4907C','#C8B6A6','#E8DCD0'],
+    ['#7D8C7C','#A6B1A2','#CBD2C8','#E8EAE4'],
+    ['#9DAB86','#C7C7A6','#DADDB1','#FCEFCC'],
+  ],
+  '商務 Business':[
+    ['#0D1B2A','#1B263B','#415A77','#778DA9','#E0E1DD'],
+    ['#003049','#D62828','#F77F00','#FCBF49','#EAE2B7'],
+    ['#14213D','#FCA311','#E5E5E5','#000000'],
+    ['#2B2D42','#8D99AE','#EDF2F4','#EF233C'],
+    ['#1D3557','#457B9D','#A8DADC','#F1FAEE','#E63946'],
+  ],
+  '繽紛 Vibrant':[
+    ['#FF6B6B','#FFD93D','#6BCB77','#4D96FF'],
+    ['#F72585','#7209B7','#3A0CA3','#4361EE','#4CC9F0'],
+    ['#FF0099','#FF6D00','#FFD500','#00C2BA'],
+    ['#EE6055','#60D394','#AAF683','#FFD97D','#FF9B85'],
+    ['#06D6A0','#118AB2','#073B4C','#FFD166','#EF476F'],
+  ],
+  '暖色 Warm':[
+    ['#FFCB69','#FFA552','#E76F51','#BC4749'],
+    ['#FFE5B4','#FFB562','#F87060','#C81912'],
+    ['#FFF3B0','#FFD60A','#FFB703','#FB8500'],
+    ['#FAE1DD','#FCD5CE','#F8AD9D','#F4978E','#F08080'],
+    ['#FEC5BB','#FCD5CE','#FAE1DD','#F8EDEB','#ECE4DB'],
+  ],
+  '冷色 Cool':[
+    ['#CAF0F8','#90E0EF','#00B4D8','#0077B6','#03045E'],
+    ['#E0FBFC','#98C1D9','#3D5A80','#293241'],
+    ['#D8F3DC','#95D5B2','#52B788','#2D6A4F','#1B4332'],
+    ['#F0F7F4','#B8E0D2','#79B4A0','#4A7C6F'],
+    ['#E3F2FD','#90CAF9','#42A5F5','#1E88E5','#0D47A1'],
+  ],
+  '粉嫩 Pastel':[
+    ['#FFD1DC','#FDE2E4','#FAD2E1','#E2ECE9','#BEE1E6'],
+    ['#FBF8CC','#FDE4CF','#FFCFD2','#F1C0E8','#CFBAF0'],
+    ['#CDB4DB','#FFC8DD','#FFAFCC','#BDE0FE','#A2D2FF'],
+    ['#D0F4DE','#A9DEF9','#E4C1F9','#FCF6BD','#FF99C8'],
+    ['#EAE4E9','#FFF1E6','#FDE2E4','#FAD2E1','#E2ECE9'],
+  ],
+  '大地 Earth':[
+    ['#606C38','#283618','#FEFAE0','#DDA15E','#BC6C25'],
+    ['#582F0E','#7F4F24','#936639','#A68A64','#B6AD90'],
+    ['#344E41','#3A5A40','#588157','#A3B18A','#DAD7CD'],
+    ['#5F0F40','#9A031E','#FB8B24','#E36414','#0F4C5C'],
+    ['#797D62','#9B9B7A','#D9AE94','#F1DCA7','#FFCB69'],
+  ],
+};
+let curTheme=Object.keys(PALETTES)[0];
+
+function toast(msg){
+  const t=$('#toast'); t.textContent=msg; t.classList.remove('hide');
+  requestAnimationFrame(()=>t.classList.add('show'));
+  clearTimeout(toast._t); toast._t=setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.classList.add('hide'),260); },1700);
+}
+async function copyText(s){ try{ await navigator.clipboard.writeText(s); return true; }catch(e){ return false; } }
+
+function renderTabs(){
+  $('#ptabs').innerHTML=Object.keys(PALETTES).map(t=>`<span class="ptab${t===curTheme?' active':''}" data-t="${t}">${t}</span>`).join('');
+}
+function renderPalettes(){
+  $('#paletteGrid').innerHTML=PALETTES[curTheme].map((pal,pi)=>{
+    const cells=pal.map(c=>`<div class="c" style="background:${c}" data-c="${c}"><span>${c}</span></div>`).join('');
+    return `<div class="pcard">
+      <div class="pcolors">${cells}</div>
+      <div class="pcardfoot">
+        <span class="nm">${pal.length} 色</span>
+        <button class="mini" data-apply="${pi}"><iconify-icon icon="lucide:check"></iconify-icon> 套用此組</button>
+        <button class="mini" data-copy="${pi}"><iconify-icon icon="lucide:copy"></iconify-icon> 複製</button>
+      </div></div>`;
+  }).join('');
+}
+$('#ptabs').addEventListener('click',e=>{ const t=e.target.closest('.ptab'); if(!t)return; curTheme=t.dataset.t; renderTabs(); renderPalettes(); });
+$('#paletteGrid').addEventListener('click',async e=>{
+  const applyBtn=e.target.closest('[data-apply]');
+  const copyBtn=e.target.closest('[data-copy]');
+  const cell=e.target.closest('.c');
+  if(applyBtn){ const pal=PALETTES[curTheme][+applyBtn.dataset.apply];
+    renderSwatches(pal); setColor(pal[0]);
+    $('#paletteModal').classList.add('hide');   // 關閉視窗以露出更新後的下方色票
+    flashSwatches(); toast('已套用此組配色，下方色票已更新');
+    return; }
+  if(copyBtn){ const pal=PALETTES[curTheme][+copyBtn.dataset.copy]; const txt=pal.join(', '); const ok=await copyText(txt); toast(ok?'已複製：'+txt:'複製失敗（瀏覽器限制）'); return; }
+  if(cell){ const c=cell.dataset.c.toUpperCase();
+    addSwatch(c); setColor(c); copyText(c);   // 同步加入下方快速色票
+    toast('已套用並複製 '+c); }
+});
+function openPalette(){ renderTabs(); renderPalettes(); $('#paletteModal').classList.remove('hide'); }
+$('#openPalette').addEventListener('click',openPalette);
+$('#openPalette2').addEventListener('click',openPalette);
+$('#closePalette').addEventListener('click',()=>$('#paletteModal').classList.add('hide'));
+$('#paletteModal').addEventListener('click',e=>{ if(e.target.id==='paletteModal') $('#paletteModal').classList.add('hide'); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') $('#paletteModal').classList.add('hide'); });
 
 /* ---------- 記住上次設定（localStorage）---------- */
 const LS='iconStudio:v1';
