@@ -8,102 +8,127 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
   :root{
-    --bg:#f6f7f9; --panel:#ffffff; --line:#e6e8ec; --ink:#1f2937; --muted:#6b7280;
-    --brand:#4f46e5; --brand-weak:#eef2ff; --radius:14px; --shadow:0 1px 3px rgba(16,24,40,.06),0 1px 2px rgba(16,24,40,.04);
+    --bg:#ffffff; --soft:#f6f6f4; --line:#e7e7e3; --ink:#0a0a0a; --muted:#9b9b94;
+    --brand:#0a0a0a; --brand-weak:#f1f1ee; --radius:16px;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
   body{
-    font-family:"Segoe UI","Microsoft JhengHei",system-ui,-apple-system,sans-serif;
-    background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased;
+    font-family:system-ui,-apple-system,"Segoe UI","Microsoft JhengHei","PingFang TC",sans-serif;
+    background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; letter-spacing:-.01em;
   }
+  ::selection{background:var(--ink);color:#fff}
+  ::-webkit-scrollbar{width:11px;height:11px}
+  ::-webkit-scrollbar-thumb{background:#dcdcd6;border-radius:99px;border:3px solid var(--bg)}
+  ::-webkit-scrollbar-thumb:hover{background:#c4c4bc}
+
   header{
-    padding:18px 22px; background:var(--panel); border-bottom:1px solid var(--line);
-    display:flex; align-items:center; gap:14px; position:sticky; top:0; z-index:20;
+    padding:20px 32px; background:rgba(255,255,255,.82); backdrop-filter:saturate(180%) blur(14px);
+    border-bottom:1px solid var(--line); display:flex; align-items:center; gap:15px; position:sticky; top:0; z-index:20;
   }
-  header .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#22d3ee);
-    display:grid;place-items:center;color:#fff;font-size:22px;flex:none}
-  header h1{font-size:18px;margin:0;font-weight:700}
-  header p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
-  .wrap{display:grid;grid-template-columns:1fr 380px;gap:18px;padding:18px 22px;max-width:1400px;margin:0 auto;align-items:start}
-  @media (max-width:920px){.wrap{grid-template-columns:1fr}}
+  header .logo{width:40px;height:40px;border-radius:12px;background:var(--ink);
+    display:grid;place-items:center;color:#fff;font-size:21px;flex:none}
+  header h1{font-size:19px;margin:0;font-weight:650;letter-spacing:-.02em}
+  header p{margin:3px 0 0;font-size:12.5px;color:var(--muted)}
+  .wrap{display:grid;grid-template-columns:1fr 360px;gap:34px;padding:34px 32px;max-width:1340px;margin:0 auto;align-items:start}
+  @media (max-width:920px){
+    .wrap{grid-template-columns:1fr;gap:24px;padding:20px}
+    .editor{position:static;max-height:none;overflow:visible}
+  }
 
   /* search */
-  .searchbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-  .searchbox{flex:1;min-width:240px;position:relative}
-  .searchbox iconify-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:20px}
+  .searchbar{margin-bottom:18px}
+  .searchbox{position:relative}
+  .searchbox iconify-icon{position:absolute;left:19px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:22px;pointer-events:none}
   .searchbox input{
-    width:100%;padding:13px 14px 13px 44px;border:1px solid var(--line);border-radius:12px;
-    font-size:15px;background:var(--panel);box-shadow:var(--shadow);outline:none
+    width:100%;padding:17px 18px 17px 53px;border:1px solid var(--line);border-radius:14px;
+    font-size:16px;background:var(--bg);outline:none;transition:.15s;letter-spacing:-.01em;color:var(--ink)
   }
-  .searchbox input:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-weak)}
-  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-  .chip{padding:7px 14px;border:1px solid var(--line);background:var(--panel);border-radius:999px;
-    font-size:13px;cursor:pointer;color:var(--muted);transition:.15s;user-select:none}
-  .chip:hover{border-color:var(--brand)}
-  .chip.active{background:var(--brand);color:#fff;border-color:var(--brand)}
-  .suggest{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+  .searchbox input::placeholder{color:#c2c2bb}
+  .searchbox input:focus{border-color:var(--ink);box-shadow:0 0 0 4px var(--brand-weak)}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+  .chip{padding:8px 15px;border:1px solid var(--line);background:var(--bg);border-radius:999px;
+    font-size:13px;cursor:pointer;color:var(--muted);transition:.14s;user-select:none;font-weight:500}
+  .chip:hover{border-color:var(--ink);color:var(--ink)}
+  .chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .src{padding:8px 32px 8px 15px;border:1px solid var(--line);background:var(--bg);border-radius:999px;
+    font-size:13px;color:var(--ink);cursor:pointer;outline:none;font-weight:500;margin-left:auto;transition:.14s;
+    appearance:none;-webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239b9b94' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center}
+  .src:hover{border-color:var(--ink)}
+  .src:focus{border-color:var(--ink);box-shadow:0 0 0 4px var(--brand-weak)}
+  .suggest{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
   .suggest small{color:var(--muted);font-size:12px;align-self:center}
-  .suggest button{border:none;background:var(--brand-weak);color:var(--brand);padding:5px 11px;border-radius:8px;font-size:12.5px;cursor:pointer}
-  .suggest button:hover{background:#e0e7ff}
+  .suggest button{border:1px solid var(--line);background:var(--bg);color:var(--muted);padding:6px 12px;border-radius:999px;font-size:12.5px;cursor:pointer;transition:.14s}
+  .suggest button:hover{border-color:var(--ink);color:var(--ink)}
 
   /* results */
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
-  .results{padding:14px;min-height:280px}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px}
+  .panel{background:var(--bg)}
+  #batchBar{border:1px solid var(--line);border-radius:14px}
+  .results{padding:2px 0;min-height:300px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}
   .cell{
-    aspect-ratio:1;border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;gap:6px;cursor:pointer;background:#fff;transition:.15s;padding:6px;position:relative
+    aspect-ratio:1;border:1px solid transparent;border-radius:14px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:8px;cursor:pointer;background:var(--bg);transition:.13s;padding:8px;position:relative
   }
-  .cell:hover{border-color:var(--brand);transform:translateY(-2px);box-shadow:0 6px 16px rgba(79,70,229,.12)}
-  .cell.sel{border-color:var(--brand);box-shadow:0 0 0 2px var(--brand-weak)}
-  .cell iconify-icon{font-size:30px;color:var(--ink)}
-  .cell .nm{font-size:9.5px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
-  .cell .pick{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:6px;border:1px solid var(--line);
-    background:#fff;display:grid;place-items:center;font-size:13px;color:var(--muted);opacity:0;transition:.12s;z-index:2}
+  .cell:hover{background:var(--soft)}
+  .cell.sel{background:var(--brand-weak);border-color:var(--ink)}
+  .cell iconify-icon{font-size:32px;color:var(--ink)}
+  .cell .nm{font-size:9.5px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;opacity:0;transition:.13s}
+  .cell:hover .nm,.cell.sel .nm{opacity:1}
+  .cell .pick{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);
+    background:var(--bg);display:grid;place-items:center;font-size:13px;color:var(--muted);opacity:0;transition:.12s;z-index:2}
   .cell:hover .pick{opacity:1}
-  .cell .pick.on{opacity:1;background:var(--brand);color:#fff;border-color:var(--brand)}
-  .cell.picked{border-color:var(--brand)}
-  .state{display:grid;place-items:center;min-height:240px;color:var(--muted);text-align:center;gap:10px;padding:20px}
-  .state iconify-icon{font-size:46px;opacity:.5}
-  .spinner{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:spin .8s linear infinite}
+  .cell .pick.on{opacity:1;background:var(--ink);color:#fff;border-color:var(--ink)}
+  .cell.picked{background:var(--soft)}
+  .state{display:grid;place-items:center;min-height:300px;color:var(--muted);text-align:center;gap:14px;padding:30px}
+  .state iconify-icon{font-size:52px;opacity:.32}
+  .spinner{width:32px;height:32px;border:2.5px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .7s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .count{font-size:12.5px;color:var(--muted);padding:0 4px 10px}
+  .count{font-size:12.5px;color:var(--muted);padding:0 2px 16px}
 
   /* editor */
-  .editor{position:sticky;top:90px;padding:16px}
-  .editor h2{font-size:14px;margin:0 0 12px;font-weight:700;display:flex;align-items:center;gap:7px}
-  .preview-wrap{border-radius:12px;overflow:hidden;border:1px solid var(--line);margin-bottom:14px}
-  .preview{height:200px;display:grid;place-items:center;
-    background-image:linear-gradient(45deg,#eceef1 25%,transparent 25%),linear-gradient(-45deg,#eceef1 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#eceef1 75%),linear-gradient(-45deg,transparent 75%,#eceef1 75%);
+  .editor{position:sticky;top:106px;padding:22px;border:1px solid var(--line);border-radius:var(--radius);
+    max-height:calc(100vh - 130px);overflow-y:auto;scrollbar-gutter:stable}
+  .editor h2{font-size:11.5px;margin:0 0 18px;font-weight:600;display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+  .preview-wrap{border-radius:14px;overflow:hidden;border:1px solid var(--line);margin-bottom:18px}
+  .preview{height:210px;display:grid;place-items:center;
+    background-image:linear-gradient(45deg,#f0f0ed 25%,transparent 25%),linear-gradient(-45deg,#f0f0ed 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#f0f0ed 75%),linear-gradient(-45deg,transparent 75%,#f0f0ed 75%);
     background-size:18px 18px;background-position:0 0,0 9px,9px -9px,-9px 0}
-  .preview svg{width:120px;height:120px;display:block}
+  .preview svg{width:124px;height:124px;display:block}
   .preview .empty{color:var(--muted);font-size:13px}
-  .field{margin-bottom:14px}
-  .field>label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:7px;font-weight:600}
+  .field{margin-bottom:18px}
+  .field>label{display:block;font-size:12px;color:var(--muted);margin-bottom:9px;font-weight:600}
   .row{display:flex;align-items:center;gap:9px}
-  input[type=range]{flex:1;accent-color:var(--brand)}
+  input[type=range]{flex:1;accent-color:var(--ink)}
   .val{font-size:12px;color:var(--ink);min-width:34px;text-align:right;font-variant-numeric:tabular-nums}
-  .swatches{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
-  .sw{width:24px;height:24px;border-radius:7px;border:1px solid rgba(0,0,0,.12);cursor:pointer}
-  .sw.active{box-shadow:0 0 0 2px var(--brand)}
-  input[type=color]{width:34px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;background:none;cursor:pointer}
-  .hex{width:90px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:ui-monospace,monospace}
-  .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border-radius:10px;border:1px solid var(--line);
-    background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink)}
-  .btn:hover{border-color:var(--brand)}
-  .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
-  .btn.primary:hover{background:#4338ca}
-  .btn:disabled{opacity:.45;cursor:not-allowed}
-  .seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
-  .seg button{flex:1;border:none;background:#fff;padding:8px;font-size:12.5px;cursor:pointer;color:var(--muted)}
-  .seg button.active{background:var(--brand);color:#fff}
+  .swatches{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .sw{width:26px;height:26px;border-radius:8px;border:1px solid rgba(0,0,0,.1);cursor:pointer;transition:.12s}
+  .sw:hover{transform:scale(1.1)}
+  .sw.active{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink)}
+  input[type=color]{width:36px;height:36px;padding:0;border:1px solid var(--line);border-radius:9px;background:none;cursor:pointer}
+  .hex{width:90px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;font-size:13px;font-family:ui-monospace,monospace;outline:none;color:var(--ink)}
+  .hex:focus{border-color:var(--ink)}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:11px;border:1px solid var(--line);
+    background:var(--bg);cursor:pointer;font-size:13px;font-weight:600;color:var(--ink);transition:.13s}
+  .btn:hover{border-color:var(--ink);background:var(--soft)}
+  .btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn.primary:hover{background:#000}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn:disabled:hover{background:var(--bg);border-color:var(--line)}
+  .seg{display:flex;border:1px solid var(--line);border-radius:11px;overflow:hidden}
+  .seg button{flex:1;border:none;background:var(--bg);padding:9px;font-size:12.5px;cursor:pointer;color:var(--muted);transition:.12s}
+  .seg button+button{border-left:1px solid var(--line)}
+  .seg button:hover{background:var(--soft)}
+  .seg button.active{background:var(--ink);color:#fff}
+  .seg button.active+button{border-left-color:var(--ink)}
   .dl{display:flex;gap:9px;margin-top:6px}
   .dl .btn{flex:1;justify-content:center}
-  .note{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+  .note{font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.6}
   .hide{display:none!important}
-  footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
-  a{color:var(--brand)}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:28px;border-top:1px solid var(--line);margin-top:24px}
+  a{color:var(--ink);text-underline-offset:2px}
 </style>
 </head>
 <body>
@@ -130,6 +155,34 @@
       <span class="chip" data-style="outline">空心線條</span>
       <span class="chip" data-style="solid">實心填滿</span>
       <span class="chip" data-style="color">彩色</span>
+      <span class="chip" data-style="3d">3D／插畫</span>
+      <select class="src" id="source" title="指定圖示庫來源">
+        <option value="all">全部來源</option>
+        <optgroup label="線條／一般">
+          <option value="lucide">Lucide</option>
+          <option value="tabler">Tabler</option>
+          <option value="iconoir">Iconoir</option>
+          <option value="ph">Phosphor</option>
+          <option value="solar">Solar</option>
+          <option value="mingcute">MingCute</option>
+          <option value="carbon">Carbon</option>
+          <option value="heroicons">Heroicons</option>
+          <option value="hugeicons">Huge Icons</option>
+        </optgroup>
+        <optgroup label="實心／系統">
+          <option value="material-symbols">Material Symbols</option>
+          <option value="mdi">Material Design</option>
+          <option value="fluent">Fluent UI</option>
+          <option value="ri">Remix Icon</option>
+        </optgroup>
+        <optgroup label="3D／彩色／品牌">
+          <option value="fluent-emoji">Fluent Emoji（3D）</option>
+          <option value="streamline-ultimate-color">Streamline 彩色</option>
+          <option value="noto">Noto Emoji</option>
+          <option value="flat-color-icons">Flat Color</option>
+          <option value="logos">品牌 Logos</option>
+        </optgroup>
+      </select>
     </div>
 
     <div class="suggest" id="suggest">
@@ -270,15 +323,59 @@ const CN = {
   '工廠':'factory','建築':'building','商店':'store','銀行':'landmark','學校':'school','教育':'graduation-cap','畢業':'graduation-cap',
   '太空':'rocket','月球':'moon','行星':'orbit','望遠鏡':'telescope','原子':'atom','磁鐵':'magnet','燒杯':'flask','實驗':'flask-conical','顯微鏡':'microscope'
 };
-const HOT = ['地球','愛心','設定','搜尋','相機','使用者','下載','日曆','購物車','星星','火箭','咖啡'];
+Object.assign(CN, {
+  // 動物
+  '狐狸':'fox','熊':'bear','熊貓':'panda','獅子':'lion','老虎':'tiger','兔子':'rabbit','馬':'horse','牛':'cow','豬':'pig','羊':'sheep','雞':'chicken','鴨':'duck','企鵝':'penguin','貓頭鷹':'owl','烏龜':'turtle','青蛙':'frog','蛇':'snake','螃蟹':'crab','章魚':'octopus','鯨魚':'whale','海豚':'dolphin','鯊魚':'shark','大象':'elephant','猴子':'monkey','蜜蜂':'bee','瓢蟲':'ladybug','蜘蛛':'spider','恐龍':'dinosaur','獨角獸':'unicorn','龍':'dragon',
+  // 食物
+  '麵包':'bread','漢堡':'hamburger','薯條':'fries','熱狗':'hotdog','三明治':'sandwich','甜甜圈':'donut','冰淇淋':'ice-cream','餅乾':'cookie','糖果':'candy','棒棒糖':'lollipop','巧克力':'chocolate','雞蛋':'egg','起司':'cheese','牛奶':'milk','果汁':'juice','汽水':'soda','飲料':'cup-soda','水果':'fruit','香蕉':'banana','橘子':'orange','葡萄':'grape','草莓':'strawberry','西瓜':'watermelon','檸檬':'lemon','櫻桃':'cherry','胡蘿蔔':'carrot','玉米':'corn','辣椒':'pepper','蘑菇':'mushroom','飯':'rice-bowl','麵':'noodles','壽司':'sushi','便當':'bento','湯':'soup','沙拉':'salad','叉子':'fork','湯匙':'spoon','刀':'knife','筷子':'chopsticks','盤子':'plate','碗':'bowl',
+  // 自然天氣
+  '山':'mountain','海':'waves','河':'waves','湖':'waves','沙漠':'cactus','仙人掌':'cactus','島':'island','森林':'trees','草':'grass','種子':'seedling','楓葉':'maple-leaf','松樹':'pine-tree','椰子樹':'palmtree','蘑菇雲':'cloud','星球':'planet','流星':'meteor','彩虹':'rainbow','雪人':'snowman','冰':'icicles','霧':'cloud-fog','颱風':'tornado','地震':'waves','火山':'volcano','溫泉':'hot-spring',
+  // 交通地點
+  '計程車':'taxi','救護車':'ambulance','消防車':'fire-truck','警車':'police-car','直升機':'helicopter','潛水艇':'submarine','纜車':'cable-car','捷運':'train-front','高鐵':'train-front','摩托車':'bike','滑板':'skateboard','輪椅':'wheelchair','加油站':'fuel','停車':'parking','紅綠燈':'traffic-cone','交通錐':'traffic-cone','橋':'bridge','隧道':'tunnel','錨':'anchor','方向盤':'steering-wheel','安全帽':'hard-hat','行李箱':'luggage','背包':'backpack','地圖釘':'map-pin','路標':'signpost','里程碑':'milestone',
+  // 商業金融
+  '公司':'building-2','辦公室':'briefcase','會議':'presentation','簡報':'presentation','合約':'file-signature','發票':'receipt','收據':'receipt','報表':'file-spreadsheet','預算':'piggy-bank','存錢筒':'piggy-bank','投資':'trending-up','股票':'candlestick-chart','匯率':'arrow-left-right','稅':'percent','折扣':'badge-percent','優惠券':'ticket','目標':'target','獎勵':'award','證書':'scroll','握手':'handshake','交易':'arrow-left-right','帳單':'receipt-text','保險':'shield','退款':'undo-2',
+  // UI 操作
+  '首頁鍵':'home','漢堡選單':'menu','關於':'info','幫助':'help-circle','問號':'help-circle','驚嘆號':'alert-circle','勾':'check','打勾框':'check-square','單選':'circle-dot','多選':'check-square','開關':'toggle-left','滑桿':'sliders','進度':'loader','載入':'loader-circle','上一頁':'chevron-left','下一頁':'chevron-right','展開':'chevron-down','收合':'chevron-up','全螢幕':'maximize','縮小視窗':'minimize','拖曳':'move','調整大小':'scaling','釘選':'pin','書籤':'bookmark','旗標':'flag','標記':'tag','置頂':'arrow-up-to-line','最愛':'heart','評分':'star','按讚':'thumbs-up','分享給':'share-2','轉發':'forward','回覆':'reply','留言':'message-square','表情':'smile','貼圖':'sticker',
+  // 通訊社群
+  '視訊':'video','視訊通話':'video','螢幕分享':'screen-share','靜音':'mic-off','擴音':'volume-2','聊天室':'messages-square','社群':'users-round','粉絲':'heart','追蹤':'user-plus','封鎖':'user-x','邀請':'user-plus','名片':'contact-round','二維碼':'qr-code','條碼':'barcode','掃描':'scan-line',
+  // 裝置科技
+  '平板':'tablet','智慧手錶':'watch','耳機麥克風':'headset','喇叭':'speaker','路由器':'router','記憶卡':'memory-stick','隨身碟':'usb','光碟':'disc','電纜':'cable','充電':'battery-charging','插座':'plug-zap','感測器':'radar','衛星':'satellite','天線':'antenna','雷達':'radar','指紋辨識':'fingerprint','人臉辨識':'scan-face','雲端':'cloud','雲端上傳':'cloud-upload','雲端下載':'cloud-download','備份':'database-backup','同步':'refresh-cw','光纖':'cable',
+  // 醫療健康
+  '醫生':'stethoscope','護士':'syringe','牙齒':'tooth','骨頭':'bone','大腦':'brain','眼科':'eye','體溫':'thermometer','體重':'scale','血壓':'heart-pulse','疫苗':'syringe','膠囊':'pill','繃帶':'bandage','口罩':'shield','救生圈':'life-buoy','輪椅族':'accessibility','健身':'dumbbell','瑜伽':'person-standing','跑步':'footprints','睡眠':'bed-double','放鬆':'flower-2',
+  // 教育文具
+  '老師':'presentation','學生':'graduation-cap','課本':'book','作業':'notebook-pen','考試':'file-check','黑板':'presentation','地球儀教學':'globe','尺':'ruler','圓規':'compass','計算機':'calculator','算盤':'calculator','獎狀':'award','圖書館':'library','背書包':'backpack','放大鏡看書':'book-open-check',
+  // 生活居家
+  '床':'bed','沙發':'sofa','椅子':'armchair','桌子':'table','門':'door-open','窗':'app-window','燈具':'lamp-ceiling','時鐘掛':'clock','鏡子':'square','馬桶':'toilet','浴缸':'bath','淋浴':'shower-head','洗衣機':'washing-machine','冰箱':'refrigerator','微波爐':'microwave','烤箱':'cooking-pot','瓦斯爐':'flame','吹風機':'wind','掃把':'brush-cleaning','拖把':'mop','垃圾':'trash-2','回收':'recycle','鑰匙圈':'key-round','雨傘':'umbrella','時尚':'shirt','口紅':'palette','香水':'spray-can','戒指':'gem','手錶配件':'watch','包包':'shopping-bag','鞋子':'footprints','帽子':'hard-hat','眼鏡配件':'glasses','嬰兒':'baby','奶瓶':'baby','玩具':'baby','積木':'blocks',
+  // 工具
+  '榔頭':'hammer','螺絲':'bolt','螺絲起子':'screwdriver','鋸子':'axe','斧頭':'axe','鏟子':'shovel','油漆':'paint-bucket','油漆刷':'paint-roller','刷子':'brush','尺規':'ruler','量角器':'compass','磚塊':'brick-wall','水管':'pipette','梯子':'ladder','工具箱':'toolbox','安全':'shield-check','滅火器':'fire-extinguisher','警報':'siren',
+  // 抽象概念
+  '想法':'lightbulb','創意':'lightbulb','靈感':'sparkles','夢想':'cloud','思考':'brain','記憶':'brain-circuit','學習':'book-open','成長':'trending-up','成功':'trophy','失敗':'x-circle','勝利':'trophy','冠軍':'crown','力量':'zap','能量':'battery-full','時間管理':'clock','專注':'target','平衡':'scale','自由':'bird','和平':'dove','環保':'leaf','永續':'recycle','創新':'rocket','合作':'users','溝通':'messages-square','領導':'crown','團隊合作':'users',
+  // 節日
+  '聖誕':'gift','聖誕樹':'tree-pine','禮物盒':'gift','蛋糕慶生':'cake','蠟燭':'candle','煙火':'sparkles','燈籠':'lantern','紅包':'gift','月餅':'cookie','粽子':'package','南瓜':'pumpkin','愛心節':'heart','鈴鐺裝飾':'bell-ring',
+  // 方向位置
+  '左上':'arrow-up-left','右上':'arrow-up-right','左下':'arrow-down-left','右下':'arrow-down-right','向左':'arrow-left','向右':'arrow-right','向上':'arrow-up','向下':'arrow-down','循環':'repeat','展開全部':'chevrons-down','中心':'crosshair','十字':'crosshair','定位':'locate',
+  // 檔案類型
+  'pdf':'file-text','word':'file-text','excel':'file-spreadsheet','ppt':'presentation','圖檔':'file-image','影音檔':'file-video','音檔':'file-audio','壓縮檔':'file-archive','程式碼檔':'file-code','資料夾開':'folder-open','新資料夾':'folder-plus','雲端硬碟':'hard-drive','文件夾':'folder'
+});
+const HOT = ['地球','愛心','設定','搜尋','相機','使用者','下載','日曆','購物車','星星','火箭','咖啡','狐狸','聖誕','獎盃','雨傘'];
 
 /* ---------- 風格判斷 ---------- */
-const MULTICOLOR = new Set(['noto','noto-v1','twemoji','fxemoji','emojione','openmoji','fluent-emoji','fluent-emoji-flat','fluent-emoji-high-contrast','flat-color-icons','logos','skill-icons','devicon','vscode-icons','circle-flags','flag','cif','unjs','catppuccin','material-icon-theme']);
+// 3D／插畫（立體渲染、彩色插畫）
+const ILLUSTRATION = new Set(['fluent-emoji','fluent-emoji-flat','noto','openmoji','fxemoji','streamline-emojis',
+  'streamline-ultimate-color','streamline-plump-color','streamline-freehand-color','streamline-color']);
+// 一般彩色／品牌
+const MULTICOLOR = new Set(['noto-v1','twemoji','emojione','emojione-v1','fluent-emoji-high-contrast','flat-color-icons',
+  'fluent-color','logos','skill-icons','devicon','vscode-icons','circle-flags','flag','cif','unjs','catppuccin','material-icon-theme']);
 const OUTLINE_SETS = new Set(['lucide','tabler','feather','iconoir','ph','majesticons','akar-icons','ci','radix-icons','heroicons','carbon','mynaui','hugeicons','lets-icons','solar','basil','gravity-ui','line-md','stash']);
 const SOLID_SETS = new Set(['mdi','ic','bxs','fa6-solid','fa-solid','fluent','material-symbols','ri','mingcute','tabler-filled']);
 
+// 各分類用來「補強搜尋」的來源前綴
+const ILLUSTRATION_PREFIXES = [...ILLUSTRATION];
+const COLOR_PREFIXES = ['twemoji','emojione','flat-color-icons','logos','circle-flags','vscode-icons','devicon','skill-icons'];
+
 function classify(full){
   const i = full.indexOf(':'); const prefix = full.slice(0,i); const name = full.slice(i+1).toLowerCase();
+  if(ILLUSTRATION.has(prefix)) return '3d';
   if(MULTICOLOR.has(prefix)) return 'color';
   if(/(^|-)(fill|filled|solid|bold)($|-)/.test(name)) return 'solid';
   if(/(^|-)(line|linear|outline|thin|light|twotone|duotone)($|-)/.test(name)) return 'outline';
@@ -290,6 +387,7 @@ function classify(full){
 /* ---------- 狀態 ---------- */
 let allIcons = [];          // 本次搜尋全部結果 full id
 let curStyle = 'all';
+let curSource = 'all';      // 指定圖示庫前綴，'all' = 全部
 let selected = null;        // full id
 let originalSVG = '';       // 選取圖示的原始 SVG 文字
 let isMono = true, isStroke = false;
@@ -298,28 +396,70 @@ const $ = s=>document.querySelector(s);
 const grid=$('#grid'), state=$('#state'), countEl=$('#count');
 
 /* ---------- 搜尋 ---------- */
-function translate(input){
-  const t = input.trim();
-  if(!t) return '';
-  if(CN[t]) return CN[t];
-  // 部分比對：找包含關係的中文詞
-  for(const k in CN){ if(t.includes(k)||k.includes(t)) return CN[k]; }
-  return t; // 直接當英文用
+const CJK=/[㐀-鿿぀-ヿ]/;       // 中日韓字元
+const trCache={};                               // 翻譯快取
+let lastInfo='';                                // 顯示「中文 → 英文」
+
+// 線上翻譯後援（Google → MyMemory）
+async function translateOnline(text){
+  if(trCache[text]!==undefined) return trCache[text];
+  try{
+    const r=await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
+    const j=await r.json();
+    const out=(j[0]||[]).map(s=>s[0]).join('').trim().toLowerCase();
+    if(out){ trCache[text]=out; return out; }
+  }catch(e){}
+  try{
+    const r=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=zh-TW|en`);
+    const j=await r.json();
+    const out=((j.responseData&&j.responseData.translatedText)||'').trim().toLowerCase();
+    if(out && !/^[㐀-鿿]/.test(out)){ trCache[text]=out; return out; }
+  }catch(e){}
+  trCache[text]='';
+  return '';
+}
+
+// 將輸入轉成可搜尋的英文關鍵字
+async function resolveQuery(input){
+  const t=input.trim(); if(!t) return {q:'',info:''};
+  if(CN[t]) return {q:CN[t], info:`「${t}」→ ${CN[t]}`};
+  for(const k in CN){ if(t.includes(k)||k.includes(t)) return {q:CN[k], info:`「${t}」→ ${CN[k]}`}; }
+  if(CJK.test(t)){
+    const tr=await translateOnline(t);
+    if(tr) return {q:tr, info:`「${t}」→ ${tr}（翻譯）`};
+  }
+  return {q:t, info:''};
+}
+
+// 依目前來源／風格決定限定的圖示庫前綴
+function effectivePrefixes(){
+  if(curSource!=='all') return curSource;
+  if(curStyle==='3d') return ILLUSTRATION_PREFIXES.join(',');
+  if(curStyle==='color') return COLOR_PREFIXES.join(',');
+  return '';
 }
 
 let timer=null;
-$('#q').addEventListener('input', e=>{ clearTimeout(timer); timer=setTimeout(()=>doSearch(e.target.value),300); });
+$('#q').addEventListener('input', e=>{ clearTimeout(timer); timer=setTimeout(()=>doSearch(e.target.value),320); });
 
 async function doSearch(input){
-  const q = translate(input);
-  if(!q){ allIcons=[]; render(); state.classList.remove('hide'); grid.classList.add('hide'); countEl.classList.add('hide');
-    state.innerHTML='<iconify-icon icon="ph:shapes-duotone"></iconify-icon><div>輸入關鍵字開始搜尋<br><small>支援中文：地球、愛心、星星、購物車、設定…</small></div>'; return; }
+  const {q,info} = await resolveQuery(input);
+  lastInfo=info;
+  if(!q){ allIcons=[]; state.classList.remove('hide'); grid.classList.add('hide'); countEl.classList.add('hide');
+    state.innerHTML='<iconify-icon icon="ph:shapes-duotone"></iconify-icon><div>輸入關鍵字開始搜尋<br><small>支援中文：地球、愛心、星星、購物車、設定…（查不到會自動翻譯）</small></div>'; return; }
   grid.classList.add('hide'); countEl.classList.add('hide'); state.classList.remove('hide');
   state.innerHTML='<div class="spinner"></div><div>搜尋「'+input+'」…</div>';
   try{
-    const r = await fetch(`${API}/search?query=${encodeURIComponent(q)}&limit=200`);
-    const data = await r.json();
-    allIcons = data.icons || [];
+    const pf=effectivePrefixes();
+    let url=`${API}/search?query=${encodeURIComponent(q)}&limit=200`;
+    if(pf) url+=`&prefixes=${encodeURIComponent(pf)}`;
+    let r=await fetch(url); let data=await r.json();
+    allIcons=data.icons||[];
+    // 若限定來源/分類後抓不到，退而搜全部
+    if(!allIcons.length && pf){
+      r=await fetch(`${API}/search?query=${encodeURIComponent(q)}&limit=200`); data=await r.json();
+      allIcons=data.icons||[];
+    }
     if(!allIcons.length){
       state.innerHTML='<iconify-icon icon="ph:smiley-sad-duotone"></iconify-icon><div>找不到「'+input+'」的圖示<br><small>試試其他關鍵字，或用英文搜尋</small></div>';
       return;
@@ -339,7 +479,7 @@ function render(){
     return;
   }
   state.classList.add('hide'); grid.classList.remove('hide'); countEl.classList.remove('hide');
-  countEl.textContent = `共 ${list.length} 個圖示${curStyle!=='all'?'（已篩選）':''}，點選即可編輯`;
+  countEl.textContent = `${lastInfo?lastInfo+'　·　':''}共 ${list.length} 個圖示${curStyle!=='all'?'（已篩選）':''}，點選即可編輯`;
   grid.innerHTML = list.slice(0,180).map(f=>{
     const name=f.slice(f.indexOf(':')+1);
     const on=batch.has(f);
@@ -356,7 +496,16 @@ function render(){
 $('#styleChips').addEventListener('click',e=>{
   const chip=e.target.closest('.chip'); if(!chip)return;
   $('#styleChips').querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-  chip.classList.add('active'); curStyle=chip.dataset.style; render();
+  chip.classList.add('active'); curStyle=chip.dataset.style;
+  // 3D／彩色會改變要抓的來源 → 重新搜尋；其餘直接前端篩選
+  const v=$('#q').value.trim();
+  if(v && (curStyle==='3d'||curStyle==='color')) doSearch(v); else render();
+});
+
+$('#source').addEventListener('change',e=>{
+  curSource=e.target.value;
+  const v=$('#q').value.trim();
+  if(v) doSearch(v); else render();
 });
 
 /* 熱門關鍵字 */
@@ -543,7 +692,7 @@ function saveSettings(){
   try{ localStorage.setItem(LS, JSON.stringify({
     color:$('#color').value, stroke:$('#stroke').value, pad:$('#pad').value,
     bgMode, bgColor:$('#bgColor').value, outSize, customSize:$('#customSize').value,
-    style:curStyle, prefix:$('#zipPrefix').value
+    style:curStyle, source:curSource, prefix:$('#zipPrefix').value
   })); }catch(e){}
 }
 function loadSettings(){
@@ -558,6 +707,7 @@ function loadSettings(){
     $('#bgCustomRow').classList.toggle('hide',s.bgMode!=='custom'); }
   if(s.style){ curStyle=s.style;
     $('#styleChips').querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.style===s.style)); }
+  if(s.source){ curSource=s.source; $('#source').value=s.source; }
   if(s.prefix) $('#zipPrefix').value=s.prefix;
   if(s.customSize){ const v=parseInt(s.customSize,10);
     if(v>=16&&v<=4096){ $('#customSize').value=s.customSize; outSize=v;
@@ -567,6 +717,7 @@ function loadSettings(){
 }
 document.addEventListener('input',()=>setTimeout(saveSettings,0));
 document.addEventListener('click',()=>setTimeout(saveSettings,0));
+document.addEventListener('change',()=>setTimeout(saveSettings,0));
 loadSettings();
 </script>
 </body>
